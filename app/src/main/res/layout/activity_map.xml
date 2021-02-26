@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+
+        <com.google.android.material.textfield.TextInputLayout
+
+            android:layout_margin="8dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:hint="搜索"
+
+            android:layout_height="wrap_content"
+
+
+           >
+            <com.google.android.material.textfield.TextInputEditText
+                android:maxLines="1"
+                android:singleLine="true"
+                android:id="@+id/edit_query"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+
+
+
+    <com.amap.api.maps.MapView
+        android:layout_margin="8dp"
+        android:id="@+id/map_view"
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        android:layout_height="0dp"/>
+
+
+    <TextView
+        android:id="@+id/location_info"
+        android:layout_margin="8dp"
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+    <Button
+        android:textColor="@color/white"
+
+        android:layout_marginLeft="8dp"
+        android:text="@string/move_map"
+
+        android:onClick="moveMap"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:textColor="@color/white"
+            android:layout_margin="8dp"
+            android:layout_weight="1"
+            android:onClick="downloadOfflineMap"
+            android:text="@string/download_offline_map"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:textColor="@color/white"
+            android:layout_margin="8dp"
+            android:text="@string/confirm"
+            android:onClick="confirm"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+
+
+</LinearLayout>
