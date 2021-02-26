@@ -21,6 +21,21 @@ Thank [XanaduAPI](https://github.com/XanaduAPI) for leaving some helpful comment
 </p>
 
 
+# Video
+
+<iframe src="//player.bilibili.com/player.html?aid=374496988&bvid=BV1MZ4y1P7K3&cid=303360384&page=1"  height="400" width="600"  scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>
+
+
+
+大佬专用请喝快乐水专用码╭(●`∀´●)╯
+
+<p>
+   <img src="pic/wechat.jpg" width="30%" height="30%">
+</p>
+
+
+
 # License
+
 This library and utilities are licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html), also included in the repository in the `COPYING.GPLv3` file.
 
