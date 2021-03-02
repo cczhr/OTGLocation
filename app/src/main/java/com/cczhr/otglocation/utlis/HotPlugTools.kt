@@ -15,7 +15,7 @@ import android.util.Log
 class HotPlugTools  {
     private val VID_APPLE = 0x5ac
     private var disconnectAppleDevice:(()->Unit)?=null
-    private var connectAppleDevice:(()->Unit)?=null
+    private var connectAppleDevice:((deviceNode:String)->Unit)?=null
     private val usbDeviceStateFilter = IntentFilter()
     private val mUsbReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent) {
@@ -27,7 +27,7 @@ class HotPlugTools  {
             } else if (UsbManager.ACTION_USB_DEVICE_ATTACHED == action) {
                 val device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE) as UsbDevice?
                 if(device?.vendorId==VID_APPLE)
-                    connectAppleDevice?.invoke()
+                    connectAppleDevice?.invoke(device.deviceName)
 
             }
         }
@@ -37,13 +37,16 @@ class HotPlugTools  {
         usbDeviceStateFilter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
     }
 
-    fun register(context: Context,connectAppleDevice:()->Unit,disconnectAppleDevice:()->Unit){
+    fun register(context: Context,connectAppleDevice:(deviceNode:String)->Unit,disconnectAppleDevice:()->Unit){
         val mUsbManager =  context.getSystemService(Context.USB_SERVICE) as UsbManager
         this.connectAppleDevice=connectAppleDevice
         this.disconnectAppleDevice=disconnectAppleDevice
         mUsbManager.deviceList.forEach { (_, value) ->
-            if(value?.vendorId==VID_APPLE)
-                connectAppleDevice.invoke()
+
+            if(value?.vendorId==VID_APPLE){
+                connectAppleDevice.invoke(value.deviceName)
+            }
+
         }
         context.registerReceiver(mUsbReceiver, usbDeviceStateFilter)
     }

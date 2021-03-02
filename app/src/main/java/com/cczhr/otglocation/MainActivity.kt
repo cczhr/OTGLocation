@@ -3,6 +3,7 @@ package com.cczhr.otglocation
 import android.content.Intent
 import android.view.View
 import androidx.lifecycle.Observer
+import com.amap.api.mapcore.util.it
 import com.cczhr.otglocation.utlis.*
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_main.*
@@ -44,7 +45,7 @@ class MainActivity : BaseActivity() {
         })
 
         hotPlugTools.register(this, {
-            libTools.startUsbmuxd({
+            libTools.startUsbmuxd(it,{
                 isConnected = true
                 connect_status.setText(R.string.connected)
             }, {

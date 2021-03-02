@@ -16,7 +16,7 @@ import java.util.concurrent.Executors
 
 /**
  * @author cczhr
- * @description  库指令  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/DeviceSupport/
+ * @description  库指令
  * @since 2021/2/22
  */
 class IMobileDeviceTools {
@@ -31,8 +31,9 @@ class IMobileDeviceTools {
     var errorResult: BufferedReader? = null
     var os: DataOutputStream? = null
 
-    fun killUsbmuxd() {
-        runCommand(".$realBinPath/usbmuxd -X")
+    fun killUsbmuxd(deviceNode: String="") {
+        val killSystemMtp=if(deviceNode.isNotEmpty())"kill `lsof  -t $deviceNode`\n" else deviceNode
+        runCommand("$killSystemMtp.$realBinPath/usbmuxd -X")
         SystemClock.sleep(1500)//保证进程杀死 休眠一下
     }
 
@@ -73,6 +74,7 @@ class IMobileDeviceTools {
     }
 
     fun startUsbmuxd(
+        deviceNode:String,
         connect: () -> Unit,
         mag: (msg: String) -> Unit,
         version: (msg: String) -> Unit,
@@ -81,7 +83,7 @@ class IMobileDeviceTools {
     ) {
         fixedThreadPool.execute {
             try {
-                killUsbmuxd()
+                killUsbmuxd(deviceNode)
                 process = Runtime.getRuntime().exec("su")
                 successResult = BufferedReader(InputStreamReader(process!!.inputStream))
                 errorResult = BufferedReader(InputStreamReader(process!!.errorStream))
@@ -209,6 +211,7 @@ class IMobileDeviceTools {
 
         runCommand(
             "mount -o remount,rw /\n" +
+                    "mount -o rw,remount -t auto /system\n" +
                     "mkdir /sdcard/lockdown\n" +
                     "mkdir /sdcard/lockdown/drivers\n" +
                     "cp -rf $libSavePath/* $realLibPath\n" +
@@ -234,7 +237,8 @@ class IMobileDeviceTools {
         }
         runCommand(
             "mount -o remount,rw /\n" +
-                    "${deleteCommand}rm -f usbmuxd.pid\n" +
+                    "mount -o rw,remount -t auto /system\n" +
+                    "${deleteCommand}rm -f $realBinPath/usbmuxd.pid\n" +
                     "rm -rf /sdcard/lockdown"
 
             , isFinish = isFinish
