@@ -1,5 +1,6 @@
 package com.cczhr.otglocation
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.view.View
 import androidx.lifecycle.Observer
@@ -19,7 +20,9 @@ class MainActivity : BaseActivity() {
     var hasDeveloperImg = false
 
 
+    @SuppressLint("SetTextI18n")
     override fun init() {
+        version?.text = "V ${Application.getVersion()}"
         latitude.setText(Application.getLat())
         longitude.setText(Application.getLon())
         log.requestFocus()

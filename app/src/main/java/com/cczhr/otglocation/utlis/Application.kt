@@ -15,6 +15,12 @@ class Application:Application() {
         private const val LON = "lon"
         private const val LAT = "lat"
 
+        fun getVersion() = try {
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName
+        } catch (e: Exception) {
+            e.printStackTrace()
+            "1.0.0"
+        }
 
 
         fun saveLat(value: String) {
