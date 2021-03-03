@@ -24,15 +24,15 @@ class IMobileDeviceTools {
     var fixedThreadPool: ExecutorService = Executors.newFixedThreadPool(10)
     val lib = "lib"
     val bin = "bin"
-    val realBinPath = "/data/local/tmp"
-    val realLibPath = "/system/lib"
+    val realBinPath = "/data/local/tmp"//
+    val realLibPath = "/data/local/tmp"///system/lib
     var process: Process? = null
     var successResult: BufferedReader? = null
     var errorResult: BufferedReader? = null
     var os: DataOutputStream? = null
 
-    fun killUsbmuxd(deviceNode: String="") {
-        val killSystemMtp=if(deviceNode.isNotEmpty())"kill `lsof  -t $deviceNode`\n" else deviceNode
+    fun killUsbmuxd(deviceNode: String = "") {
+        val killSystemMtp = if (deviceNode.isNotEmpty()) "kill `lsof  -t $deviceNode`\n" else deviceNode
         runCommand("$killSystemMtp.$realBinPath/usbmuxd -X")
         SystemClock.sleep(1500)//保证进程杀死 休眠一下
     }
@@ -74,17 +74,17 @@ class IMobileDeviceTools {
     }
 
     fun startUsbmuxd(
-        deviceNode:String,
-        connect: () -> Unit,
-        mag: (msg: String) -> Unit,
-        version: (msg: String) -> Unit,
-        deviceName: (msg: String) -> Unit,
-        developerImg: (status: Boolean) -> Unit
+            deviceNode: String,
+            connect: () -> Unit,
+            mag: (msg: String) -> Unit,
+            version: (msg: String) -> Unit,
+            deviceName: (msg: String) -> Unit,
+            developerImg: (status: Boolean) -> Unit
     ) {
         fixedThreadPool.execute {
             try {
                 killUsbmuxd(deviceNode)
-                process = Runtime.getRuntime().exec("su")
+                process = Runtime.getRuntime().exec("su", arrayOf("LD_LIBRARY_PATH=$realBinPath"))
                 successResult = BufferedReader(InputStreamReader(process!!.inputStream))
                 errorResult = BufferedReader(InputStreamReader(process!!.errorStream))
                 os = DataOutputStream(process!!.outputStream)
@@ -100,49 +100,49 @@ class IMobileDeviceTools {
                                 Application.context.runMainThread {
                                     mag(it)
                                     if (it.contains(
-                                            "Finished preflight on device",
-                                            true
-                                        ) || it.contains("is_device_connected", true)
+                                                    "Finished preflight on device",
+                                                    true
+                                            ) || it.contains("is_device_connected", true)
                                     ) {
                                         connect.invoke()
                                         runCommand(
-                                            ".${realBinPath}/ideviceinfo -k DeviceName",
-                                            { dName ->
-                                                deviceName.invoke(dName)
-                                                runCommand(
-                                                    ".${realBinPath}/ideviceinfo -k ProductVersion",
-                                                    { pVersion ->
-                                                        version.invoke(pVersion)
-                                                        runCommand(
-                                                            ".${realBinPath}/ideviceimagemounter /sdcard/lockdown/drivers/$pVersion/DeveloperDiskImage.dmg  /sdcard/lockdown/drivers/$pVersion/DeveloperDiskImage.dmg.signature",
-                                                            isFinish = {
+                                                ".${realBinPath}/ideviceinfo -k DeviceName",
+                                                { dName ->
+                                                    deviceName.invoke(dName)
+                                                    runCommand(
+                                                            ".${realBinPath}/ideviceinfo -k ProductVersion",
+                                                            { pVersion ->
+                                                                version.invoke(pVersion)
                                                                 runCommand(
-                                                                    ".${realBinPath}/ideviceimagemounter -l",
-                                                                    {
-                                                                        if (!it.contains(
-                                                                                "Status",
-                                                                                true
-                                                                            )
-                                                                        ) {
-                                                                            developerImg.invoke(
-                                                                                !it.contains(
-                                                                                    "ERROR",
-                                                                                    true
-                                                                                ) && !it.contains(
-                                                                                    "ImageSignature[0]",
-                                                                                    true
-                                                                                )
+                                                                        ".${realBinPath}/ideviceimagemounter /sdcard/lockdown/drivers/$pVersion/DeveloperDiskImage.dmg  /sdcard/lockdown/drivers/$pVersion/DeveloperDiskImage.dmg.signature",
+                                                                        isFinish = {
+                                                                            runCommand(
+                                                                                    ".${realBinPath}/ideviceimagemounter -l",
+                                                                                    {
+                                                                                        if (!it.contains(
+                                                                                                        "Status",
+                                                                                                        true
+                                                                                                )
+                                                                                        ) {
+                                                                                            developerImg.invoke(
+                                                                                                    !it.contains(
+                                                                                                            "ERROR",
+                                                                                                            true
+                                                                                                    ) && !it.contains(
+                                                                                                            "ImageSignature[0]",
+                                                                                                            true
+                                                                                                    )
+                                                                                            )
+                                                                                        }
+                                                                                    }
+
                                                                             )
                                                                         }
-                                                                    }
 
                                                                 )
-                                                            }
 
-                                                        )
-
-                                                    })
-                                            })
+                                                            })
+                                                })
 
 
                                     }
@@ -208,19 +208,17 @@ class IMobileDeviceTools {
             val fileName = "${bin}/$it"
             assetManager.open(fileName).saveFilesDir(binSavePath, it)
         }
-
         runCommand(
-            "mount -o remount,rw /\n" +
-                    "mount -o rw,remount -t auto /system\n" +
-                    "mkdir /sdcard/lockdown\n" +
-                    "mkdir /sdcard/lockdown/drivers\n" +
-                    "cp -rf $libSavePath/* $realLibPath\n" +
-                    "cp -rf $binSavePath/* $realBinPath\n" +
-                    "$libPermission" +
-                    "chmod 777 -R $realBinPath"
-            , isFinish = {
-                isSuccess.invoke(checkInstallLib(context))
-            })
+
+                "mkdir /sdcard/lockdown\n" +
+                        "mkdir /sdcard/lockdown/drivers\n" +
+                        "cp -rf $libSavePath/* $realLibPath\n" +
+                        "cp -rf $binSavePath/* $realBinPath\n" +
+                        "$libPermission" +
+                        "chmod 777 -R $realBinPath"
+                , isFinish = {
+            isSuccess.invoke(checkInstallLib(context))
+        })
 
 
     }
@@ -236,12 +234,10 @@ class IMobileDeviceTools {
             deleteCommand.append("rm -f $realBinPath/$it\n")
         }
         runCommand(
-            "mount -o remount,rw /\n" +
-                    "mount -o rw,remount -t auto /system\n" +
-                    "${deleteCommand}rm -f $realBinPath/usbmuxd.pid\n" +
-                    "rm -rf /sdcard/lockdown"
+                "${deleteCommand}rm -f $realBinPath/usbmuxd.pid\n" +
+                        "rm -rf /sdcard/lockdown"
 
-            , isFinish = isFinish
+                , isFinish = isFinish
         )
     }
 
@@ -276,17 +272,17 @@ class IMobileDeviceTools {
 
 
     private fun runCommand(
-        cmd: String,
-        input: ((str: String) -> Unit)? = null,
-        error: ((str: String) -> Unit)? = null,
-        isFinish: (() -> Unit)? = null
+            cmd: String,
+            input: ((str: String) -> Unit)? = null,
+            error: ((str: String) -> Unit)? = null,
+            isFinish: (() -> Unit)? = null
     ) {
         fixedThreadPool.execute {
             try {
                 val successResult: BufferedReader
                 val errorResult: BufferedReader
                 val os: DataOutputStream
-                val process: Process = Runtime.getRuntime().exec("su")
+                val process: Process = Runtime.getRuntime().exec("su", arrayOf("LD_LIBRARY_PATH=$realBinPath"))
                 successResult = BufferedReader(InputStreamReader(process.inputStream))
                 errorResult = BufferedReader(InputStreamReader(process.errorStream))
                 os = DataOutputStream(process.outputStream)
