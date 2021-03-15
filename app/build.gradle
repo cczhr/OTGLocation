@@ -55,4 +55,7 @@ dependencies {
     implementation 'com.amap.api:search:7.7.0'
     implementation 'com.amap.api:map2d:5.2.0'
     implementation 'cat.ereza:customactivityoncrash:2.3.0'
+    implementation 'androidx.room:room-runtime:2.2.5'
+    kapt 'androidx.room:room-compiler:2.2.5'
+    implementation "androidx.room:room-ktx:2.2.5"
 }

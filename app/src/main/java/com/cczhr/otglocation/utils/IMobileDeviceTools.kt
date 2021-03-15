@@ -1,10 +1,9 @@
-package com.cczhr.otglocation.utlis
+package com.cczhr.otglocation.utils
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.AssetManager
 import android.os.SystemClock
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import java.io.BufferedReader
 import java.io.DataOutputStream
@@ -22,10 +21,9 @@ import java.util.concurrent.Executors
 class IMobileDeviceTools {
     val logStr = MutableLiveData<String>()
     var fixedThreadPool: ExecutorService = Executors.newFixedThreadPool(10)
-    val lib = "lib"
-    val bin = "bin"
-    val realBinPath = "/data/local/tmp"//
-    val realLibPath = "/data/local/tmp"///system/lib
+    private val lib = "lib"
+    private val bin = "bin"
+    private val saveFilePath = "/data/local/tmp"
     var process: Process? = null
     var successResult: BufferedReader? = null
     var errorResult: BufferedReader? = null
@@ -33,7 +31,7 @@ class IMobileDeviceTools {
 
     fun killUsbmuxd(deviceNode: String = "") {
         val killSystemMtp = if (deviceNode.isNotEmpty()) "kill `lsof  -t $deviceNode`\n" else deviceNode
-        runCommand("$killSystemMtp.$realBinPath/usbmuxd -X")
+        runCommand("$killSystemMtp.$saveFilePath/usbmuxd -X")
         SystemClock.sleep(1500)//保证进程杀死 休眠一下
     }
 
@@ -84,11 +82,11 @@ class IMobileDeviceTools {
         fixedThreadPool.execute {
             try {
                 killUsbmuxd(deviceNode)
-                process = Runtime.getRuntime().exec("su", arrayOf("LD_LIBRARY_PATH=$realBinPath"))
+                process = Runtime.getRuntime().exec("su", arrayOf("LD_LIBRARY_PATH=$saveFilePath"))
                 successResult = BufferedReader(InputStreamReader(process!!.inputStream))
                 errorResult = BufferedReader(InputStreamReader(process!!.errorStream))
                 os = DataOutputStream(process!!.outputStream)
-                os?.write(".$realBinPath/usbmuxd -v -f".toByteArray())
+                os?.write(".$saveFilePath/usbmuxd -v -f".toByteArray())
                 os?.writeBytes("\n")
                 os?.flush()
                 os?.close()
@@ -99,59 +97,27 @@ class IMobileDeviceTools {
                             line?.let {
                                 Application.context.runMainThread {
                                     mag(it)
-                                    if (it.contains(
-                                                    "Finished preflight on device",
-                                                    true
-                                            ) || it.contains("is_device_connected", true)
-                                    ) {
+                                    if (it.contains("Finished preflight on device", true) || it.contains("is_device_connected", true)){
                                         connect.invoke()
-                                        runCommand(
-                                                ".${realBinPath}/ideviceinfo -k DeviceName",
-                                                { dName ->
-                                                    deviceName.invoke(dName)
-                                                    runCommand(
-                                                            ".${realBinPath}/ideviceinfo -k ProductVersion",
-                                                            { pVersion ->
-                                                                version.invoke(pVersion)
-                                                                runCommand(
-                                                                        ".${realBinPath}/ideviceimagemounter /sdcard/lockdown/drivers/$pVersion/DeveloperDiskImage.dmg  /sdcard/lockdown/drivers/$pVersion/DeveloperDiskImage.dmg.signature",
-                                                                        isFinish = {
-                                                                            runCommand(
-                                                                                    ".${realBinPath}/ideviceimagemounter -l",
-                                                                                    {
-                                                                                        if (!it.contains(
-                                                                                                        "Status",
-                                                                                                        true
-                                                                                                )
-                                                                                        ) {
-                                                                                            developerImg.invoke(
-                                                                                                    !it.contains(
-                                                                                                            "ERROR",
-                                                                                                            true
-                                                                                                    ) && !it.contains(
-                                                                                                            "ImageSignature[0]",
-                                                                                                            true
-                                                                                                    )
-                                                                                            )
-                                                                                        }
-                                                                                    }
+                                        runCommand(".${saveFilePath}/ideviceinfo -k DeviceName", { dName ->
+                                            deviceName.invoke(dName)
 
-                                                                            )
-                                                                        }
+                                            runCommand(".${saveFilePath}/ideviceinfo -k ProductVersion", { pVersion -> version.invoke(pVersion)
 
-                                                                )
+                                                runCommand(".${saveFilePath}/ideviceimagemounter /sdcard/lockdown/drivers/$pVersion/DeveloperDiskImage.dmg  /sdcard/lockdown/drivers/$pVersion/DeveloperDiskImage.dmg.signature", isFinish = {
 
-                                                            })
-                                                })
-
-
+                                                    runCommand(".${saveFilePath}/ideviceimagemounter -l", {
+                                                        if (!it.contains("Status", true)) {
+                                                            developerImg.invoke(!it.contains("ERROR", true) && !it.contains("ImageSignature[0]", true))
+                                                        }
+                                                    }
+                                                    )}
+                                                )
+                                            })
+                                        })
                                     }
-
-
                                 }
                             }
-
-
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -184,12 +150,12 @@ class IMobileDeviceTools {
 
 
     fun resetLocation(isFinish: (() -> Unit)) {
-        runCommand(".${realBinPath}/idevicesetlocation reset", isFinish = isFinish)
+        runCommand(".${saveFilePath}/idevicesetlocation reset", isFinish = isFinish)
     }
 
 
     fun modifyLocation(lat: Double, lon: Double, isFinish: (() -> Unit)) {
-        runCommand(".${realBinPath}/idevicesetlocation $lat $lon", isFinish = isFinish)
+        runCommand(".${saveFilePath}/idevicesetlocation $lat $lon", isFinish = isFinish)
     }
 
     @SuppressLint("SdCardPath")
@@ -200,7 +166,7 @@ class IMobileDeviceTools {
         val libPermission = StringBuilder()
         assetManager.list(lib)?.forEach {
             val fileName = "${lib}/$it"
-            libPermission.append("chmod 644 $realLibPath/$it\n")
+            libPermission.append("chmod 644 $saveFilePath/$it\n")
             assetManager.open(fileName).saveFilesDir(libSavePath, it)
 
         }
@@ -209,13 +175,12 @@ class IMobileDeviceTools {
             assetManager.open(fileName).saveFilesDir(binSavePath, it)
         }
         runCommand(
-
                 "mkdir /sdcard/lockdown\n" +
                         "mkdir /sdcard/lockdown/drivers\n" +
-                        "cp -rf $libSavePath/* $realLibPath\n" +
-                        "cp -rf $binSavePath/* $realBinPath\n" +
+                        "cp -rf $libSavePath/* $saveFilePath\n" +
+                        "cp -rf $binSavePath/* $saveFilePath\n" +
                         "$libPermission" +
-                        "chmod 777 -R $realBinPath"
+                        "chmod 777 -R $saveFilePath"
                 , isFinish = {
             isSuccess.invoke(checkInstallLib(context))
         })
@@ -227,14 +192,14 @@ class IMobileDeviceTools {
         val assetManager: AssetManager = context.getAssets()
         val deleteCommand = StringBuilder()
         assetManager.list(lib)?.forEach {
-            deleteCommand.append("rm -f $realLibPath/$it\n")
+            deleteCommand.append("rm -f $saveFilePath/$it\n")
 
         }
         assetManager.list(bin)?.forEach {
-            deleteCommand.append("rm -f $realBinPath/$it\n")
+            deleteCommand.append("rm -f $saveFilePath/$it\n")
         }
         runCommand(
-                "${deleteCommand}rm -f $realBinPath/usbmuxd.pid\n" +
+                "${deleteCommand}rm -f $saveFilePath/usbmuxd.pid\n" +
                         "rm -rf /sdcard/lockdown"
 
                 , isFinish = isFinish
@@ -244,12 +209,12 @@ class IMobileDeviceTools {
     fun checkInstallLib(context: Context): Boolean {
         val assetManager: AssetManager = context.getAssets()
         assetManager.list(lib)?.forEach {
-            if (!File("$realLibPath/$it").exists())
+            if (!File("$saveFilePath/$it").exists())
                 return false
 
         }
         assetManager.list(bin)?.forEach {
-            if (!File("$realBinPath/$it").exists())
+            if (!File("$saveFilePath/$it").exists())
                 return false
 
         }
@@ -282,7 +247,7 @@ class IMobileDeviceTools {
                 val successResult: BufferedReader
                 val errorResult: BufferedReader
                 val os: DataOutputStream
-                val process: Process = Runtime.getRuntime().exec("su", arrayOf("LD_LIBRARY_PATH=$realBinPath"))
+                val process: Process = Runtime.getRuntime().exec("su", arrayOf("LD_LIBRARY_PATH=$saveFilePath"))
                 successResult = BufferedReader(InputStreamReader(process.inputStream))
                 errorResult = BufferedReader(InputStreamReader(process.errorStream))
                 os = DataOutputStream(process.outputStream)

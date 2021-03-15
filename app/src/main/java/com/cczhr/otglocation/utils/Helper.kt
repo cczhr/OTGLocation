@@ -1,7 +1,6 @@
-package com.cczhr.otglocation.utlis
+package com.cczhr.otglocation.utils
 
 import android.content.Context
-import android.util.Log
 import androidx.core.content.ContextCompat
 import java.io.*
 

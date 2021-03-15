@@ -1,4 +1,4 @@
-package com.cczhr.otglocation.utlis
+package com.cczhr.otglocation.utils
 
 import android.app.Application
 import android.content.Context

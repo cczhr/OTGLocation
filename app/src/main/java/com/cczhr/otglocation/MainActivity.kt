@@ -5,7 +5,7 @@ import android.content.Intent
 import android.view.View
 import androidx.lifecycle.Observer
 import com.amap.api.mapcore.util.it
-import com.cczhr.otglocation.utlis.*
+import com.cczhr.otglocation.utils.*
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -47,8 +47,8 @@ class MainActivity : BaseActivity() {
             logAdd(it)
         })
 
-        hotPlugTools.register(this, {
-            libTools.startUsbmuxd(it,{
+        hotPlugTools.register(this, { deviceNode ->
+            libTools.startUsbmuxd(deviceNode,{
                 isConnected = true
                 connect_status.setText(R.string.connected)
             }, {
@@ -182,7 +182,6 @@ class MainActivity : BaseActivity() {
     }
 
     private fun checkStatus(): Boolean {
-
         if (!hasLib)
             CommonUtil.showToast(Application.context, "请安装组件!")
         else if (!isConnected)

@@ -1,9 +1,9 @@
-package com.cczhr.otglocation.utlis
+package com.cczhr.otglocation.utils
 
 import android.content.Context
 import android.view.View
 import android.widget.PopupWindow
-import com.cczhr.otglocation.utlis.PopupController.PopupParams
+import com.cczhr.otglocation.utils.PopupController.PopupParams
 
 /**
  * @author cczhr

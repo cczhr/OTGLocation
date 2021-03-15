@@ -1,4 +1,4 @@
-package com.cczhr.otglocation.utlis
+package com.cczhr.otglocation.utils
 
 /**
  * @author cczhr

@@ -11,7 +11,6 @@ import com.amap.api.location.AMapLocation
 import com.amap.api.location.AMapLocationClient
 import com.amap.api.location.AMapLocationClientOption
 import com.amap.api.location.AMapLocationListener
-import com.amap.api.mapcore.util.it
 import com.amap.api.maps.AMap
 import com.amap.api.maps.CameraUpdateFactory
 import com.amap.api.maps.LocationSource
@@ -27,10 +26,10 @@ import com.amap.api.services.help.InputtipsQuery
 import com.amap.api.services.help.Tip
 import com.amap.api.services.poisearch.PoiResult
 import com.amap.api.services.poisearch.PoiSearch
-import com.cczhr.otglocation.utlis.Application
-import com.cczhr.otglocation.utlis.CommonPopupWindow
-import com.cczhr.otglocation.utlis.runMainThread
-import com.cczhr.otglocation.utlis.CommonUtil
+import com.cczhr.otglocation.utils.Application
+import com.cczhr.otglocation.utils.CommonPopupWindow
+import com.cczhr.otglocation.utils.runMainThread
+import com.cczhr.otglocation.utils.CommonUtil
 import kotlinx.android.synthetic.main.activity_map.*
 
 
