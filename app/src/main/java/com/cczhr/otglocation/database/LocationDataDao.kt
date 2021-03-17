@@ -1,4 +1,4 @@
-package com.scigrace.controller.database
+package com.cczhr.otglocation.database
 
 import androidx.room.Dao
 import androidx.room.Insert

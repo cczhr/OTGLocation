@@ -10,6 +10,7 @@
     <string name="device_name">设备名称:</string>
     <string name="latitude">纬度:</string>
     <string name="longitude">经度:</string>
+    <string name="alias">别名</string>
     <string name="about_help">关于/帮助</string>
     <string name="install_lib">安装组件</string>
     <string name="uninstall_lib">删除组件</string>
@@ -19,10 +20,15 @@
     <string name="please_check_permissions">应用缺少权限!</string>
     <string name="root_hint">系统尚未root，程序无法将正常运行!</string>
     <string name="download_offline_map">下载离线地图</string>
-    <string name="move_map">移动地图到选中坐标</string>
+    <string name="move_map">移动到选中坐标</string>
+    <string name="local_location">选取本地坐标</string>
+    <string name="save_location">保存到本地坐标</string>
+    <string name="save">保存</string>
+    <string name="cancel">取消</string>
     <string name="please_select_location">请选择坐标</string>
     <string name="lib_status">组件安装状态:</string>
     <string name="developer_img">iOS开发者驱动挂载:</string>
     <string name="cancel_location_offset">取消坐标转换(GCJ-02转WGS84)</string>
     <string name="about">源代码:https://github.com/cczhr/OTGLocation\n仅供学习 请勿使用于非法途径\n\n首次安装打开app先点击安装组件,需要完全卸载app时前先点击删除组件再常规卸载\n\n使用前请将对应iOS开发者驱动放到/sdcard/lockdown/drivers/路径下\n\n例如iOS版本14.4,则在/sdcard/lockdown/drivers/14.4/路径下放入开发者驱动DeveloperDiskImage.dmg和DeveloperDiskImage.dmg.signature\n\niOS开发者驱动可以在Xcode提取/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/DeviceSupport/]\n\n如苹果设备弹出[要信用此电脑吗?]对话框时请选择[信任]</string>
+    <string name="search">搜索</string>
 </resources>

@@ -1,12 +1,12 @@
 package com.cczhr.otglocation
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.EditText
-import android.widget.ListView
+import android.widget.*
 import com.amap.api.location.AMapLocation
 import com.amap.api.location.AMapLocationClient
 import com.amap.api.location.AMapLocationClientOption
@@ -30,6 +30,7 @@ import com.cczhr.otglocation.utils.Application
 import com.cczhr.otglocation.utils.CommonPopupWindow
 import com.cczhr.otglocation.utils.runMainThread
 import com.cczhr.otglocation.utils.CommonUtil
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_map.*
 
 
@@ -299,11 +300,36 @@ class MapActivity:BaseActivity(), LocationSource, AMapLocationListener,
         val lon=   locationLon.toDoubleOrNull()
         if(lat==null||lon==null){
             CommonUtil.showToast(Application.context,R.string.please_select_location)
-        }else{
-            setResult(0,Intent().putExtra("lat",lat).putExtra("lon",lon))
+        }else {
+            setResult(0, Intent().putExtra("lat", lat).putExtra("lon", lon))
             finish()
         }
 
+
+    }
+
+
+    fun selectLocation(view: View) {
+        //todo 选择坐标
+    }
+    @SuppressLint("SetTextI18n")
+    fun saveLocation(view: View) {
+        val lat = locationLat.toDoubleOrNull()
+        val lon=   locationLon.toDoubleOrNull()
+        if(lat==null||lon==null) {
+            CommonUtil.showToast(Application.context, R.string.please_select_location)
+            return
+        }
+        val dialogView=LayoutInflater.from(this).inflate(R.layout.view_save_location,null)
+        dialogView.findViewById<TextView>(R.id.latitude).text = getString(R.string.latitude)+lat
+        dialogView.findViewById<TextView>(R.id.longitude).text = getString(R.string.longitude)+lon
+        dialogView.findViewById<Button>(R.id.save).setOnClickListener {
+            //todo 保存坐标
+        }
+        MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.save_location)
+                .setView(dialogView)
+                .show()
 
     }
 }

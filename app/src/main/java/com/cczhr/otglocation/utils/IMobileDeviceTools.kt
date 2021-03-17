@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.AssetManager
 import android.os.SystemClock
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import java.io.BufferedReader
 import java.io.DataOutputStream
@@ -24,6 +25,7 @@ class IMobileDeviceTools {
     private val lib = "lib"
     private val bin = "bin"
     private val saveFilePath = "/data/local/tmp"
+   // val systemLibPath = "/system/lib"
     var process: Process? = null
     var successResult: BufferedReader? = null
     var errorResult: BufferedReader? = null
@@ -155,7 +157,7 @@ class IMobileDeviceTools {
 
 
     fun modifyLocation(lat: Double, lon: Double, isFinish: (() -> Unit)) {
-        runCommand(".${saveFilePath}/idevicesetlocation $lat $lon", isFinish = isFinish)
+        runCommand(".${saveFilePath}/idevicesetlocation -- $lat  $lon", isFinish = isFinish)
     }
 
     @SuppressLint("SdCardPath")
