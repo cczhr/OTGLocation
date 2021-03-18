@@ -13,22 +13,29 @@ import com.cczhr.otglocation.database.LocationData
 @Dao
 interface LocationDataDao {
     @Query("SELECT * FROM LocationData  ")
-    fun getAll(): List<LocationData>
+    suspend  fun getAll(): List<LocationData>
+
+
+    @Query("SELECT COUNT(*)   FROM LocationData WHERE info=:info ")
+    suspend  fun queryCountByInfo(info:String):Long
 
 
     @Query("DELETE FROM LocationData")
-    fun deleteAll()
+    suspend  fun deleteAll()
+
+    @Query("DELETE FROM LocationData WHERE info=:info")
+    suspend  fun deleteByInfo(info:String)
     
     @Insert
-    fun insert(locationData: LocationData)
+    suspend   fun insert(locationData: LocationData):Long
 
     @Insert
-    fun insertAll(vararg target: LocationData)
+    suspend   fun insertAll(vararg target: LocationData)
 
     @Insert
-    fun insertAll(target: List<LocationData> )
+    suspend   fun insertAll(target: List<LocationData> )
 
 
     @Query("DELETE FROM LocationData WHERE  id =:id")
-    fun deleteExpiredData(id:Long)
+    suspend   fun deleteExpiredData(id:Long)
 }

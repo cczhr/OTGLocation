@@ -25,7 +25,11 @@
     <string name="save_location">保存到本地坐标</string>
     <string name="save">保存</string>
     <string name="cancel">取消</string>
+    <string name="delete">删除</string>
     <string name="please_select_location">请选择坐标</string>
+    <string name="please_input_info">请输入别名</string>
+    <string name="saved_successfully">保存成功</string>
+    <string name="save_failed">保存失败,本地已有相同别名</string>
     <string name="lib_status">组件安装状态:</string>
     <string name="developer_img">iOS开发者驱动挂载:</string>
     <string name="cancel_location_offset">取消坐标转换(GCJ-02转WGS84)</string>

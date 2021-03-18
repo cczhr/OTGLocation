@@ -3,10 +3,16 @@ package com.cczhr.otglocation
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.EditText
+import android.widget.ListView
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.ListPopupWindow
 import com.amap.api.location.AMapLocation
 import com.amap.api.location.AMapLocationClient
 import com.amap.api.location.AMapLocationClientOption
@@ -26,38 +32,72 @@ import com.amap.api.services.help.InputtipsQuery
 import com.amap.api.services.help.Tip
 import com.amap.api.services.poisearch.PoiResult
 import com.amap.api.services.poisearch.PoiSearch
+import com.cczhr.otglocation.database.AppDatabase
+import com.cczhr.otglocation.database.LocationData
 import com.cczhr.otglocation.utils.Application
 import com.cczhr.otglocation.utils.CommonPopupWindow
-import com.cczhr.otglocation.utils.runMainThread
 import com.cczhr.otglocation.utils.CommonUtil
+import com.cczhr.otglocation.utils.runMainThread
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_map.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
-class MapActivity:BaseActivity(), LocationSource, AMapLocationListener,
+class MapActivity : BaseActivity(), LocationSource, AMapLocationListener,
     PoiSearch.OnPoiSearchListener, Inputtips.InputtipsListener {
-    private var mLocationClient: AMapLocationClient?=null //定位发起端
+    private var mLocationClient: AMapLocationClient? = null //定位发起端
     private lateinit var mLocationOption: AMapLocationClientOption
-    private var mListener: LocationSource.OnLocationChangedListener?=null  //定位监听器
-    private var locationLat= "" //定位或者移动地图的纬度
-    private var locationLon= "" ////定位或者移动地图的经度
+    private var mListener: LocationSource.OnLocationChangedListener? = null  //定位监听器
+    private var locationLat = "" //定位或者移动地图的纬度
+    private var locationLon = "" ////定位或者移动地图的经度
+
     //标识，用于判断是否只显示一次定位信息和用户重新定位
     private var isFirstLoc = true
     private lateinit var aMap: AMap
-    override val layoutId: Int=R.layout.activity_map
-    lateinit var inputTips:Inputtips
-    var hasMaker=false
+    override val layoutId: Int = R.layout.activity_map
+    lateinit var inputTips: Inputtips
+    var hasMaker = false
+    val locationData = ArrayList<LocationData>()
+    lateinit var locationAdapter: ArrayAdapter<LocationData>
     override fun init() {
+        locationAdapter = ArrayAdapter(this, R.layout.popup_location_item, locationData)
+        select_location.setAdapter(locationAdapter)
+        select_location.setOnItemClickListener { _, _, position, _ ->
+            val latLng = LatLng(
+                locationData[position].lat.toDouble(),
+                locationData[position].lon.toDouble()
+            )
+            addMaker(latLng, true)
+            aMap.moveCamera(
+                CameraUpdateFactory.changeLatLng(latLng)
+            )
 
+
+        }
+        loadLocationData()
 
     }
 
+    private fun loadLocationData() {
+        launch {
+            locationData.clear()
+            locationAdapter.notifyDataSetChanged()
+            withContext(Dispatchers.IO) {
+                locationData.addAll(
+                    AppDatabase.getDatabase(this@MapActivity).locationDataDao().getAll()
+                )
+            }
+            locationAdapter.notifyDataSetChanged()
+        }
+    }
 
-    private  fun initQuery(){
-        CommonUtil.setOnEnterClickListener(edit_query){ view: View, content: String ->
+    private fun initQuery() {
+        CommonUtil.setOnEnterClickListener(edit_query) { view: View, content: String ->
             switchInputMethod()
-            if(content.isNotEmpty()){
-                inputTips= Inputtips(this, InputtipsQuery(content, ""))
+            if (content.isNotEmpty()) {
+                inputTips = Inputtips(this, InputtipsQuery(content, ""))
                 inputTips.setInputtipsListener(this)
                 inputTips.requestInputtipsAsyn()
             }
@@ -65,9 +105,10 @@ class MapActivity:BaseActivity(), LocationSource, AMapLocationListener,
         }
 
     }
-    private fun initLocationClient(){
-        if(mLocationClient==null)
-            mLocationClient =   AMapLocationClient(this);
+
+    private fun initLocationClient() {
+        if (mLocationClient == null)
+            mLocationClient = AMapLocationClient(this);
         mLocationClient!!.setLocationListener(this)
         mLocationOption = AMapLocationClientOption()
         mLocationOption.locationMode = AMapLocationClientOption.AMapLocationMode.Hight_Accuracy
@@ -75,10 +116,10 @@ class MapActivity:BaseActivity(), LocationSource, AMapLocationListener,
         mLocationClient!!.disableBackgroundLocation(true)
 
 
-
     }
-    private fun initMapView(){
-        aMap=map_view.map
+
+    private fun initMapView() {
+        aMap = map_view.map
         aMap.moveCamera(CameraUpdateFactory.zoomTo(17F))
 
         aMap.setOnMapClickListener {
@@ -90,35 +131,37 @@ class MapActivity:BaseActivity(), LocationSource, AMapLocationListener,
         aMap.isMyLocationEnabled = true
     }
 
+    private fun addMaker(latLng: LatLng, isLocalData: Boolean = false) {
+        if (!isLocalData) {
+            select_location.setText("",false)
+            select_location.clearFocus()
 
-
-    fun addMaker(latLng: LatLng){
-        hasMaker=true
+        }
+        hasMaker = true
         aMap.clear()
         aMap.addMarker(MarkerOptions().position(latLng))
         locationLat = latLng.latitude.toString()
-        locationLon =latLng.longitude.toString()
-
-        location_info.text = "当前选择坐标:\n${getText(R.string.latitude)}$locationLat\n${getText(R.string.longitude)}$locationLon"
+        locationLon = latLng.longitude.toString()
+        location_info.text =
+            "当前选择坐标:\n${getText(R.string.latitude)}$locationLat\n${getText(R.string.longitude)}$locationLon"
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         map_view.onCreate(savedInstanceState)
         initMapView()
         initLocationClient()
         initQuery()
-
-
-        val lat =  intent.getDoubleExtra("lat", -999999.0)
+        val lat = intent.getDoubleExtra("lat", -999999.0)
         val lon = intent.getDoubleExtra("lon", -999999.0)
         if (lat != -999999.0 && lon != -999999.0) {
-            val latLng= LatLng(
+            val latLng = LatLng(
                 lat,
                 lon
             )
-            addMaker(latLng)
-            aMap.moveCamera(CameraUpdateFactory.changeLatLng(latLng)
+            addMaker(latLng, true)
+            aMap.moveCamera(
+                CameraUpdateFactory.changeLatLng(latLng)
             )
         }
 
@@ -169,7 +212,7 @@ class MapActivity:BaseActivity(), LocationSource, AMapLocationListener,
             if (aMapLocation.errorCode == 0) {
                 // 如果不设置标志位，此时再拖动地图时，它会不断将地图移动到当前的位置
                 if (isFirstLoc) {
-                    if(!hasMaker) {
+                    if (!hasMaker) {
                         aMap.moveCamera(CameraUpdateFactory.zoomTo(17F))
                         //将地图移动到定位点
                         aMap.moveCamera(
@@ -202,7 +245,6 @@ class MapActivity:BaseActivity(), LocationSource, AMapLocationListener,
     }
 
 
-
     private fun createSearchPopup(
         editText: EditText,
         list: List<LocationAddressInfo>,
@@ -218,15 +260,15 @@ class MapActivity:BaseActivity(), LocationSource, AMapLocationListener,
         val view: View = popupWindow.controller.mPopupView
         val listView = view.findViewById<ListView>(R.id.list_view)
         val adapter: ArrayAdapter<LocationAddressInfo> = ArrayAdapter(
-            this ,
+            this,
             android.R.layout.simple_list_item_1,
             list
         )
         listView.adapter = adapter
         listView.setOnItemClickListener { _, _, position, _ ->
             val result = list[position]
-                editText.setText( result.title)
-                editText.setSelection( editText.text.toString().length)
+            editText.setText(result.title)
+            editText.setSelection(editText.text.toString().length)
             if (selectData != null)
                 selectData(result)
             popupWindow.dismiss()
@@ -235,22 +277,26 @@ class MapActivity:BaseActivity(), LocationSource, AMapLocationListener,
     }
 
 
-    data class LocationAddressInfo(var latLonPoint: LatLonPoint,var title:String,var address:String){
+    data class LocationAddressInfo(
+        var latLonPoint: LatLonPoint,
+        var title: String,
+        var address: String
+    ) {
         override fun toString(): String {
-            return  "$title\n$address"
+            return "$title\n$address"
         }
     }
 
     override fun onGetInputtips(tips: MutableList<Tip>, rCode: Int) {
-        if (rCode ==CODE_AMAP_SUCCESS) {
+        if (rCode == CODE_AMAP_SUCCESS) {
             val data: ArrayList<LocationAddressInfo> = ArrayList<LocationAddressInfo>() //自己创建的数据集合
             tips.forEach {
-                data.add(LocationAddressInfo(it.point, it.name, it.district+it.address))
+                data.add(LocationAddressInfo(it.point, it.name, it.district + it.address))
             }
             Application.context.runMainThread {
                 if (data.isNotEmpty()) {
                     createSearchPopup(edit_query, data) {
-                        val latLng= LatLng(
+                        val latLng = LatLng(
                             it.latLonPoint.latitude,
                             it.latLonPoint.longitude
                         )
@@ -261,11 +307,11 @@ class MapActivity:BaseActivity(), LocationSource, AMapLocationListener,
                             )
                         )
                     }
-                }else{
+                } else {
                     CommonUtil.showToast(Application.context, "无搜索结果")
                 }
             }
-        }else{
+        } else {
             Application.context.runMainThread {
                 CommonUtil.showToast(Application.context, "无搜索结果")//"错误码$rCode"
             }
@@ -282,11 +328,11 @@ class MapActivity:BaseActivity(), LocationSource, AMapLocationListener,
 
     fun moveMap(view: View) {
         val lat = locationLat.toDoubleOrNull()
-        val lon=   locationLon.toDoubleOrNull()
-        if(lat==null||lon==null)
+        val lon = locationLon.toDoubleOrNull()
+        if (lat == null || lon == null)
             return
 
-        val latLng= LatLng(lat, lon)
+        val latLng = LatLng(lat, lon)
         aMap.moveCamera(
             CameraUpdateFactory.changeLatLng(
                 latLng
@@ -297,10 +343,10 @@ class MapActivity:BaseActivity(), LocationSource, AMapLocationListener,
 
     fun confirm(view: View) {
         val lat = locationLat.toDoubleOrNull()
-        val lon=   locationLon.toDoubleOrNull()
-        if(lat==null||lon==null){
-            CommonUtil.showToast(Application.context,R.string.please_select_location)
-        }else {
+        val lon = locationLon.toDoubleOrNull()
+        if (lat == null || lon == null) {
+            CommonUtil.showToast(Application.context, R.string.please_select_location)
+        } else {
             setResult(0, Intent().putExtra("lat", lat).putExtra("lon", lon))
             finish()
         }
@@ -309,27 +355,77 @@ class MapActivity:BaseActivity(), LocationSource, AMapLocationListener,
     }
 
 
-    fun selectLocation(view: View) {
-        //todo 选择坐标
-    }
     @SuppressLint("SetTextI18n")
     fun saveLocation(view: View) {
         val lat = locationLat.toDoubleOrNull()
-        val lon=   locationLon.toDoubleOrNull()
-        if(lat==null||lon==null) {
+        val lon = locationLon.toDoubleOrNull()
+        if (lat == null || lon == null) {
             CommonUtil.showToast(Application.context, R.string.please_select_location)
             return
         }
-        val dialogView=LayoutInflater.from(this).inflate(R.layout.view_save_location,null)
-        dialogView.findViewById<TextView>(R.id.latitude).text = getString(R.string.latitude)+lat
-        dialogView.findViewById<TextView>(R.id.longitude).text = getString(R.string.longitude)+lon
-        dialogView.findViewById<Button>(R.id.save).setOnClickListener {
-            //todo 保存坐标
+        val dialogView =
+            LayoutInflater.from(this).inflate(R.layout.view_save_location, null).apply {
+                findViewById<TextView>(R.id.latitude).text = getString(R.string.latitude) + lat
+                findViewById<TextView>(R.id.longitude).text = getString(R.string.longitude) + lon
+            }
+        val info = dialogView.findViewById<EditText>(R.id.info)
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.save_location)
+            .setView(dialogView)
+            .setNegativeButton(getString(R.string.cancel), null)
+            .setPositiveButton(getString(R.string.save), null)
+            .show()
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            if (info.text.isBlank()) {
+                CommonUtil.showToast(Application.context, getString(R.string.please_input_info))
+            } else {
+                val infoText = info.text.toString()
+                launch {
+                    withContext(Dispatchers.IO) {
+                        var code = -1L
+                        if (AppDatabase.getDatabase(this@MapActivity).locationDataDao()
+                                .queryCountByInfo(infoText) == 0L
+                        ) {
+                            code = AppDatabase.getDatabase(this@MapActivity).locationDataDao()
+                                .insert(LocationData(0, locationLat, locationLon, infoText))
+                        }
+                        code
+                    }.let {
+                        if (it != -1L) {
+                            CommonUtil.showToast(
+                                Application.context,
+                                getString(R.string.saved_successfully)
+                            )
+                            dialog.dismiss()
+                            loadLocationData()
+                        } else {
+                            CommonUtil.showToast(
+                                Application.context,
+                                getString(R.string.save_failed)
+                            )
+                        }
+                    }
+                }
+            }
+
         }
-        MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.save_location)
-                .setView(dialogView)
-                .show()
+
+
+    }
+
+    fun deleteLocalLocation(view: View) {
+        val info = select_location.text.toString()
+        if (!info.isBlank()) {
+            launch {
+                withContext(Dispatchers.IO) {
+                    AppDatabase.getDatabase(this@MapActivity).locationDataDao().deleteByInfo(info)
+
+                }
+                select_location.setText("",false)
+                loadLocationData()
+            }
+        }
+
 
     }
 }

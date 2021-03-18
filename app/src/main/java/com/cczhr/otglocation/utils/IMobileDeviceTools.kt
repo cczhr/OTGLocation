@@ -25,7 +25,7 @@ class IMobileDeviceTools {
     private val lib = "lib"
     private val bin = "bin"
     private val saveFilePath = "/data/local/tmp"
-   // val systemLibPath = "/system/lib"
+    val systemLibPath = "/system/lib"
     var process: Process? = null
     var successResult: BufferedReader? = null
     var errorResult: BufferedReader? = null

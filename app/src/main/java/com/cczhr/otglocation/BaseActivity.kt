@@ -17,6 +17,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 
 
 /**
@@ -24,7 +27,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
  * @since  2020/9/6
  * @description https://github.com/cczhr
  */
-abstract class BaseActivity : AppCompatActivity() {
+abstract class BaseActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private lateinit var filePathResult: (String) -> Unit
     private lateinit var permissionsResult: (Boolean) -> Unit
     protected abstract val layoutId: Int
@@ -101,6 +104,11 @@ abstract class BaseActivity : AppCompatActivity() {
         return if (window.superDispatchTouchEvent(ev)) {
             true
         } else onTouchEvent(ev)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cancel()
     }
 
     override fun onRequestPermissionsResult(
