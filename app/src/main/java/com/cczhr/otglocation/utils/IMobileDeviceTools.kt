@@ -33,7 +33,8 @@ class IMobileDeviceTools {
 
     fun killUsbmuxd(deviceNode: String = "") {
         val killSystemMtp = if (deviceNode.isNotEmpty()) "kill `lsof  -t $deviceNode`\n" else deviceNode
-        runCommand("$killSystemMtp.$saveFilePath/usbmuxd -X")
+        val killPort="kill -9  `netstat -tunlp  | grep 27015|awk '{print $7} '|awk -F '/' '{print $1}'`"
+        runCommand("$killSystemMtp.$saveFilePath/usbmuxd -X\n$killPort")
         SystemClock.sleep(1500)//保证进程杀死 休眠一下
     }
 

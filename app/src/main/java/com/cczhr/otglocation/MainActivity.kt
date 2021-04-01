@@ -96,7 +96,7 @@ class MainActivity : BaseActivity() {
     fun selectLocation(view: View) {
         val lat = latitude.text.toString().toDoubleOrNull()
         val lon = longitude.text.toString().toDoubleOrNull()
-        val intent=Intent(this, BaiduMapActivity::class.java)//MapActivity
+        val intent=Intent(this, MapActivity::class.java)
         if (lat != null && lon != null) {
             intent.putExtra("lat",lat)
             intent.putExtra("lon",lon)

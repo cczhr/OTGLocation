@@ -2,15 +2,12 @@ package com.cczhr.otglocation.utils
 
 import android.app.Application
 import android.content.Context
-import com.baidu.mapapi.CoordType
-import com.baidu.mapapi.SDKInitializer
+ 
 
 class Application:Application() {
 
     override fun onCreate() {
         super.onCreate()
-        SDKInitializer.initialize(this)
-        SDKInitializer.setCoordType(CoordType.GCJ02)
         context=this
     }
     companion object {
