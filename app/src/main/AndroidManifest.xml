@@ -44,8 +44,7 @@
         <meta-data android:name="com.amap.api.v2.apikey" android:value="23185808a860d03642cabce72547a117"/>
         <service android:name="com.amap.api.location.APSService" />
 
-        <meta-data android:name="com.baidu.lbsapi.API_KEY" android:value="06WDfpIkPIgEZyLHkoymQdVhbwnuGnhN"/>
-        <service android:name="com.baidu.location.f" android:enabled="true" android:process=":remote"/>
+
 
         <activity android:name="com.amap.api.maps.offlinemap.OfflineMapActivity"
             android:screenOrientation="portrait"  />
@@ -57,7 +56,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".MapActivity"  android:screenOrientation="portrait" />
-        <activity android:name=".BaiduMapActivity"  android:screenOrientation="portrait" />
+
     </application>
 
 </manifest>
