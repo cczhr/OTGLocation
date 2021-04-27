@@ -30,12 +30,20 @@ class IMobileDeviceTools {
     var successResult: BufferedReader? = null
     var errorResult: BufferedReader? = null
     var os: DataOutputStream? = null
+    @Volatile
+    var isKilling=false
 
     fun killUsbmuxd(deviceNode: String = "") {
-        val killSystemMtp = if (deviceNode.isNotEmpty()) "kill `lsof  -t $deviceNode`\n" else deviceNode
-        val killPort="kill -9  `netstat -tunlp  | grep 27015|awk '{print $7} '|awk -F '/' '{print $1}'`"
-        runCommand("$killSystemMtp.$saveFilePath/usbmuxd -X\n$killPort")
-        SystemClock.sleep(1500)//保证进程杀死 休眠一下
+        if(!isKilling){
+            isKilling=true
+            SystemClock.sleep(1500)
+            val killSystemMtp = if (deviceNode.isNotEmpty()) "kill `lsof  -t $deviceNode`\n" else deviceNode
+            val killPort="kill  `netstat -tunlp  | grep 27015|awk '{print $7} '|awk -F '/' '{print $1}'`"
+            runCommand("$killSystemMtp.$saveFilePath/usbmuxd -X -v -f\n$killPort")
+            SystemClock.sleep(2000)//保证进程杀死 休眠一下
+            isKilling=false
+        }
+
     }
 
     fun String.addLogStr() {
@@ -45,6 +53,7 @@ class IMobileDeviceTools {
     fun release() {
         try {
             stopUsbmuxd {
+                killUsbmuxd()
                 fixedThreadPool.shutdownNow()
             }
         } catch (e: Exception) {
@@ -55,7 +64,7 @@ class IMobileDeviceTools {
     fun stopUsbmuxd(disconnect: () -> Unit) {
         fixedThreadPool.execute {
             try {
-                killUsbmuxd()
+                //killUsbmuxd()
                 successResult?.close()
                 errorResult?.close()
                 os?.close()
@@ -84,6 +93,8 @@ class IMobileDeviceTools {
     ) {
         fixedThreadPool.execute {
             try {
+                if(isKilling)
+                    return@execute
                 killUsbmuxd(deviceNode)
                 process = Runtime.getRuntime().exec("su", arrayOf("LD_LIBRARY_PATH=$saveFilePath"))
                 successResult = BufferedReader(InputStreamReader(process!!.inputStream))
@@ -142,7 +153,7 @@ class IMobileDeviceTools {
                     }
 
                 }
-                process!!.waitFor();
+                process!!.waitFor()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
