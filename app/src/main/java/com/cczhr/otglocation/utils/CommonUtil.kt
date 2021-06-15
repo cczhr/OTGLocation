@@ -72,6 +72,17 @@ open class CommonUtil {
                 false
             }
         }
+        fun getProgressDialog(@NonNull context: Context, @StringRes messageId: Int ): ProgressDialog {
+            val progressDialog = ProgressDialog(context)
+            progressDialog.setCancelable(false)
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            progressDialog.setMessage(context.getString(messageId))
+            progressDialog.max=100
+            progressDialog.setProgress(0);
+            progressDialog.show()
+            return progressDialog
+        }
+
 
 
     }

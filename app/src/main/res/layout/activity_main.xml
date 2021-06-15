@@ -159,6 +159,15 @@
         android:layout_height="wrap_content"
         android:text="@string/cancel_location_offset" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="downloadDriver"
+        android:text="@string/download_the_developer_driver"
+        android:textColor="@color/white" />
+
+
+
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -228,6 +237,7 @@
 
 
     </LinearLayout>
+
 
     <com.cczhr.otglocation.view.TextInputLayout2
         android:id="@+id/text_input_layout"

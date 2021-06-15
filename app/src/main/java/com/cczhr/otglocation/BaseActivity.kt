@@ -17,9 +17,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
 
 /**
@@ -32,6 +31,9 @@ abstract class BaseActivity : AppCompatActivity(), CoroutineScope by MainScope()
     private lateinit var permissionsResult: (Boolean) -> Unit
     protected abstract val layoutId: Int
     protected abstract fun init()
+    override val coroutineContext: CoroutineContext = SupervisorJob() + Dispatchers.Main +
+            CoroutineExceptionHandler { _, exception -> handleException(exception) }
+    protected open fun handleException(t: Throwable) = t.printStackTrace()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(layoutId)

@@ -1,13 +1,25 @@
 package com.cczhr.otglocation
 
 import android.annotation.SuppressLint
+import android.app.Dialog
+import android.app.ProgressDialog
 import android.content.Intent
+import android.text.TextUtils
+import android.util.Log
 import android.view.View
 import androidx.lifecycle.Observer
 import com.amap.api.mapcore.util.it
+import com.cczhr.otglocation.net.RetrofitManager
 import com.cczhr.otglocation.utils.*
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.lang.Exception
 
 
 class MainActivity : BaseActivity() {
@@ -19,9 +31,20 @@ class MainActivity : BaseActivity() {
     var isConnected = false
     var hasDeveloperImg = false
 
+    var progressDialog: ProgressDialog? = null
 
     @SuppressLint("SetTextI18n")
+
+
+    override fun handleException(t: Throwable) {
+        super.handleException(t)
+        CommonUtil.showToast(Application.context, "下载失败")
+        progressDialog?.dismiss()
+    }
+
     override fun init() {
+
+
         version?.text = "V ${Application.getVersion()}"
         latitude.setText(Application.getLat())
         longitude.setText(Application.getLon())
@@ -48,7 +71,7 @@ class MainActivity : BaseActivity() {
         })
 
         hotPlugTools.register(this, { deviceNode ->
-            libTools.startUsbmuxd(deviceNode,{
+            libTools.startUsbmuxd(deviceNode, {
                 isConnected = true
                 connect_status.setText(R.string.connected)
             }, {
@@ -78,7 +101,9 @@ class MainActivity : BaseActivity() {
             log.setText("")
         }
 
+
     }
+
 
     override fun onDestroy() {
         super.onDestroy()
@@ -88,21 +113,23 @@ class MainActivity : BaseActivity() {
 
 
     fun logAdd(str: String) {
+
         log.append(str + "\n")
         log.setSelection(log.text.toString().length)
+
 
     }
 
     fun selectLocation(view: View) {
         val lat = latitude.text.toString().toDoubleOrNull()
         val lon = longitude.text.toString().toDoubleOrNull()
-        val intent=Intent(this, MapActivity::class.java)
+        val intent = Intent(this, MapActivity::class.java)
         if (lat != null && lon != null) {
-            intent.putExtra("lat",lat)
-            intent.putExtra("lon",lon)
+            intent.putExtra("lat", lat)
+            intent.putExtra("lon", lon)
         }
 
-        startActivityForResult(intent , 102)
+        startActivityForResult(intent, 102)
     }
 
 
@@ -141,7 +168,7 @@ class MainActivity : BaseActivity() {
     }
 
     fun modifyLocation(view: View) {
-        if(!checkStatus())
+        if (!checkStatus())
             return
         var lat = latitude.text.toString().toDoubleOrNull()
         var lon = longitude.text.toString().toDoubleOrNull()
@@ -165,7 +192,7 @@ class MainActivity : BaseActivity() {
     }
 
     fun restoreLocation(view: View) {
-        if(!checkStatus())
+        if (!checkStatus())
             return
 
         libTools.resetLocation {
@@ -186,11 +213,89 @@ class MainActivity : BaseActivity() {
             CommonUtil.showToast(Application.context, "请安装组件!")
         else if (!isConnected)
             CommonUtil.showToast(Application.context, "请连接设备!")
-        else if(!hasDeveloperImg)
+        else if (!hasDeveloperImg)
             CommonUtil.showToast(Application.context, "开发者驱动未挂载!")
 
-        return hasLib&&isConnected&&hasDeveloperImg
+        return hasLib && isConnected && hasDeveloperImg
     }
 
+    fun downloadDriver(view: View) {
+        val version = product_version.text.toString()
+        if (version.isEmpty()) {
+            CommonUtil.showToast(Application.context, "请连接设备后再点击下载!")
+            return
+        }
+        progressDialog = CommonUtil.getProgressDialog(this, R.string.please_wait)
+        launch(Dispatchers.Main) {
+            var downloadUrl = ""
+            val deviceSupport = RetrofitManager.getInstance().getBaseApi().getDeviceSupport()
+            if (deviceSupport == null) {
+                return@launch
+            } else {
+                for (item in deviceSupport) {
+                    if (item.name.contains(version)) {
+                        downloadUrl = item.download_url
+                        break
+                    }
+
+                }
+            }
+            if (downloadUrl.isEmpty()) {
+                progressDialog?.dismiss()
+                CommonUtil.showToast(Application.context, "没有找到对应的开发者驱动")
+                logAdd("没有找到对应的开发者驱动!")
+                return@launch
+            }
+
+            downloadUrl = downloadUrl.replace(
+                "https://raw.githubusercontent.com/",
+                "https://raw.fastgit.org/"
+            )
+            logAdd("正在下载")
+
+            RetrofitManager.getInstance().getBaseApi().get(downloadUrl)
+                .downloadFile("ios.zip", IMobileDeviceTools.DEVICE_PATH).collect {
+                when (it) {
+                    -1 -> {
+                        progressDialog?.dismiss()
+                        logAdd("下载失败")
+                    }
+                    100 -> {
+                        progressDialog?.dismiss()
+                        logAdd("下载完成")
+                    }
+                    else -> {
+                        progressDialog?.progress = it
+                    }
+                }
+            }
+            logAdd("正在解压")
+            withContext(Dispatchers.IO) {
+                ZipUtils.unzipFile(
+                    IMobileDeviceTools.DEVICE_PATH + File.separator + "ios.zip",
+                    IMobileDeviceTools.DEVICE_PATH
+                )
+            }
+            val path1 =
+                FileUtils.findFile(File(IMobileDeviceTools.DEVICE_PATH), "DeveloperDiskImage.dmg")
+            val path2 = FileUtils.findFile(
+                File(IMobileDeviceTools.DEVICE_PATH),
+                "DeveloperDiskImage.dmg.signature"
+            )
+            if (path1.isNotEmpty() && path2.isNotEmpty()) {
+                libTools.mountImage(version, path1, path2) {
+                    hasDeveloperImg = it
+                    developer_img.text = it.toString()
+                    if (it)
+                        logAdd("重要的事情说两遍：写入成功！现在你可以修改定位了!\n")
+                    else
+                        logAdd("开发者镜像写入失败!\n")
+                }
+            } else {
+                logAdd("下载文件不完整 路径1:$path1 路径2:$path2")
+            }
+
+        }
+    }
 
 }
