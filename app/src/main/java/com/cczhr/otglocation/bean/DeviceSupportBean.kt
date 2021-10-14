@@ -1,4 +1,4 @@
-package com.cczhr.otglocation.net
+package com.cczhr.otglocation.bean
 
 /**
  * @author cczhr

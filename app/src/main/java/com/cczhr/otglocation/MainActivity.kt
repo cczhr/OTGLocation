@@ -220,11 +220,12 @@ class MainActivity : BaseActivity() {
     }
 
     fun downloadDriver(view: View) {
-        val version = product_version.text.toString()
+        var version = product_version.text.toString()
         if (version.isEmpty()) {
             CommonUtil.showToast(Application.context, "请连接设备后再点击下载!")
             return
         }
+        version=version.substringBeforeLast(".")
         progressDialog = CommonUtil.getProgressDialog(this, R.string.please_wait)
         launch(Dispatchers.Main) {
             var downloadUrl = ""
@@ -237,7 +238,6 @@ class MainActivity : BaseActivity() {
                         downloadUrl = item.download_url
                         break
                     }
-
                 }
             }
             if (downloadUrl.isEmpty()) {
@@ -252,7 +252,6 @@ class MainActivity : BaseActivity() {
                 "https://raw.fastgit.org/"
             )
             logAdd("正在下载")
-
             RetrofitManager.getInstance().getBaseApi().get(downloadUrl)
                 .downloadFile("ios.zip", IMobileDeviceTools.DEVICE_PATH).collect {
                 when (it) {

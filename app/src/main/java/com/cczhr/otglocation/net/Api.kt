@@ -1,9 +1,9 @@
 package com.cczhr.otglocation.net
 
+import com.cczhr.otglocation.bean.DeviceSupportBean
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.GET
-import retrofit2.http.Headers
 import retrofit2.http.Streaming
 import retrofit2.http.Url
 
