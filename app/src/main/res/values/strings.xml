@@ -37,4 +37,5 @@
     <string name="search">搜索</string>
     <string name="download_the_developer_driver">下载开发者驱动</string>
     <string name="please_wait">请稍等…</string>
+    <string name="usb_tips">USB权限申请被拒绝</string>
 </resources>

@@ -70,8 +70,8 @@ class MainActivity : BaseActivity() {
             logAdd(it)
         })
 
-        hotPlugTools.register(this, { deviceNode ->
-            libTools.startUsbmuxd(deviceNode, {
+        hotPlugTools.register(this, { deviceNode,fd ->
+            libTools.startUsbmuxd(deviceNode, fd,{
                 isConnected = true
                 connect_status.setText(R.string.connected)
             }, {

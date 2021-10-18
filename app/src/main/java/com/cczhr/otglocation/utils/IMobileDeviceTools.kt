@@ -126,6 +126,7 @@ class IMobileDeviceTools {
 
     fun startUsbmuxd(
         deviceNode: String,
+        fd:Int,
         connect: () -> Unit,
         mag: (msg: String) -> Unit,
         version: (msg: String) -> Unit,
@@ -141,7 +142,7 @@ class IMobileDeviceTools {
                 successResult = BufferedReader(InputStreamReader(process!!.inputStream))
                 errorResult = BufferedReader(InputStreamReader(process!!.errorStream))
                 os = DataOutputStream(process!!.outputStream)
-                os?.write(".$saveFilePath/usbmuxd -v -f".toByteArray())
+                os?.write(".$saveFilePath/usbmuxd -v -f -d $fd".toByteArray())
                 os?.writeBytes("\n")
                 os?.flush()
                 os?.close()
