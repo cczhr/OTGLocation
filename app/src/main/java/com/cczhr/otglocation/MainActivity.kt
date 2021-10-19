@@ -71,6 +71,8 @@ class MainActivity : BaseActivity() {
         })
 
         hotPlugTools.register(this, { deviceNode,fd ->
+
+            logAdd("node=$deviceNode fd=$fd")
             libTools.startUsbmuxd(deviceNode, fd,{
                 isConnected = true
                 connect_status.setText(R.string.connected)

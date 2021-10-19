@@ -77,8 +77,10 @@ class HotPlugTools {
     fun checkPermission(usbDevice: UsbDevice) {
         val mUsbManager = context.getSystemService(Context.USB_SERVICE) as UsbManager
         if (mUsbManager.hasPermission(usbDevice)) {
-            val usbDeviceConnection = mUsbManager.openDevice(usbDevice);
-            connectAppleDevice?.invoke(usbDevice.deviceName, usbDeviceConnection.fileDescriptor)
+            mUsbManager.openDevice(usbDevice)?.let {
+                connectAppleDevice?.invoke(usbDevice.deviceName, it.fileDescriptor)
+            }
+
         } else {
             val pendingIntent =
                 PendingIntent.getBroadcast(context, 0, Intent(ACTION_USB_PERMISSION), 0)

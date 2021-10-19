@@ -45,11 +45,13 @@ class IMobileDeviceTools {
         if (!isKilling) {
             isKilling = true
             SystemClock.sleep(1500)
-            val killSystemMtp =
-                if (deviceNode.isNotEmpty()) "kill `lsof  -t $deviceNode`\n" else deviceNode
+     /*       val killSystemMtp =
+                if (deviceNode.isNotEmpty()) "kill `lsof  -t $deviceNode`\n" else deviceNode*/
             val killPort =
                 "kill  `netstat -tunlp  | grep 27015|awk '{print $7} '|awk -F '/' '{print $1}'`"
-            runCommand("$killSystemMtp.$saveFilePath/usbmuxd -X -v -f\n$killPort")
+           // runCommand("$killSystemMtp.$saveFilePath/usbmuxd -X -v -f\n$killPort")
+
+            runCommand(".$saveFilePath/usbmuxd -X -v -f\n$killPort")
             SystemClock.sleep(2000)//保证进程杀死 休眠一下
             isKilling = false
         }
@@ -142,7 +144,7 @@ class IMobileDeviceTools {
                 successResult = BufferedReader(InputStreamReader(process!!.inputStream))
                 errorResult = BufferedReader(InputStreamReader(process!!.errorStream))
                 os = DataOutputStream(process!!.outputStream)
-                os?.write(".$saveFilePath/usbmuxd -v -f -d $fd".toByteArray())
+                os?.write(".$saveFilePath/usbmuxd -v -f      ".toByteArray())//--pidfile NONE --usbfd $fd
                 os?.writeBytes("\n")
                 os?.flush()
                 os?.close()
@@ -216,7 +218,9 @@ class IMobileDeviceTools {
                         var line: String?
                         while (successResult!!.readLine().also { line = it } != null) {
                             line?.let {
-                                mag("$it\n")
+                                Application.context.runMainThread {
+                                    mag("$it\n")
+                                }
                             }
                         }
                     } catch (e: Exception) {
