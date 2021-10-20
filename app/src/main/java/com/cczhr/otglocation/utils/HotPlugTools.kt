@@ -68,7 +68,7 @@ class HotPlugTools {
         for(device in mUsbManager.deviceList.values ){
             if (device?.vendorId == VID_APPLE) {
                 checkPermission(device)
-                break
+
             }
         }
         context.registerReceiver(mUsbReceiver, usbDeviceStateFilter)
