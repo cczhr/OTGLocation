@@ -1,5 +1,6 @@
 package com.cczhr.otglocation.utils
 
+import android.util.Log
 import java.io.File
 import java.io.FileFilter
 
@@ -10,20 +11,17 @@ import java.io.FileFilter
  */
 class FileUtils {
     companion object{
-        fun findFile(dir: File,fileName:String):String{
-            if (dir.isDirectory) {
-                val files = dir.listFiles()
-                for (file in files) {
-                    if(file.isDirectory)
-                        return findFile(file,fileName)
-                    else if(file.isFile&&file.name==fileName){
-                        return file.absolutePath
-                    }
+        fun findFile(dir: File,fileName:String):String {
+
+            val fileTreeWalk = dir.walk()
+            fileTreeWalk.iterator().forEach {
+                if (it.name == fileName && it.isFile) {
+                    return it.absolutePath
                 }
+
             }
             return ""
         }
-
         /**
          * Delete the all in directory.
          *

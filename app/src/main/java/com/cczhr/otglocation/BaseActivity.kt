@@ -16,7 +16,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import com.cczhr.otglocation.utils.Application
+import com.cczhr.otglocation.utils.CommonUtil
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.hjq.permissions.OnPermissionCallback
+import com.hjq.permissions.Permission
+import com.hjq.permissions.XXPermissions
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
@@ -40,27 +45,31 @@ abstract class BaseActivity : AppCompatActivity(), CoroutineScope by MainScope()
         init()
     }
     fun requestPermissions(result: (Boolean) -> Unit) {
-        permissionsResult = result
-        val permissions = arrayOf(
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.READ_PHONE_STATE,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_WIFI_STATE,
-            Manifest.permission.ACCESS_NETWORK_STATE
-        )
-        var isGetAllPermissions = true
-        for (p in permissions) {
-            if (ContextCompat.checkSelfPermission(this, p) == PackageManager.PERMISSION_DENIED) {
-                isGetAllPermissions = false
-                break
-            }
-        }
-        if (!isGetAllPermissions) {
-            ActivityCompat.requestPermissions(this, permissions, 100)
-        } else {
-            permissionsResult.invoke(true)
-        }
+        permissionsResult=  result
+
+            XXPermissions.with(this) // 申请安装包权限
+                .permission(Permission.MANAGE_EXTERNAL_STORAGE)
+                .permission(Permission.ACCESS_FINE_LOCATION)
+                .permission(Permission.ACCESS_COARSE_LOCATION)
+                .permission(Permission.READ_PHONE_STATE)
+                .request(object : OnPermissionCallback {
+                    override fun onGranted(permissions: List<String>, all: Boolean) {
+                        permissionsResult.invoke(true)
+                    }
+
+                    override fun onDenied(permissions: List<String>, never: Boolean) {
+                        permissionsResult.invoke(false)
+                        if (never) {
+                            CommonUtil.showToast(Application.context,"获取权限失败！请手动赋予权限")
+                            // 如果是被永久拒绝就跳转到应用权限系统设置页面
+                            XXPermissions.startPermissionActivity(this@BaseActivity, permissions)
+                        } else {
+                            CommonUtil.showToast(Application.context,"获取权限失败！请手动赋予权限")
+                            // 如果是被永久拒绝就跳转到应用权限系统设置页面
+                            XXPermissions.startPermissionActivity(this@BaseActivity, permissions)
+                        }
+                    }
+                })
     }
 
 

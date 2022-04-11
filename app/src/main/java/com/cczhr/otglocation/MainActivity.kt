@@ -7,12 +7,20 @@ import android.content.Intent
 import android.text.TextUtils
 import android.util.Log
 import android.view.View
+import android.widget.ArrayAdapter
 import androidx.lifecycle.Observer
 import com.amap.api.mapcore.util.it
+import com.amap.api.maps.CameraUpdateFactory
+import com.amap.api.maps.model.LatLng
+import com.cczhr.otglocation.database.AppDatabase
+import com.cczhr.otglocation.database.LocationData
 import com.cczhr.otglocation.net.RetrofitManager
 import com.cczhr.otglocation.utils.*
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_main.select_location
+import kotlinx.android.synthetic.main.activity_main.text_input_layout
+import kotlinx.android.synthetic.main.activity_map.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
@@ -30,9 +38,9 @@ class MainActivity : BaseActivity() {
     var isRoot = false
     var isConnected = false
     var hasDeveloperImg = false
-
     var progressDialog: ProgressDialog? = null
-
+    lateinit var locationAdapter: ArrayAdapter<LocationData>
+    val locationData = ArrayList<LocationData>()
     @SuppressLint("SetTextI18n")
 
 
@@ -42,9 +50,33 @@ class MainActivity : BaseActivity() {
         progressDialog?.dismiss()
     }
 
+    private fun loadLocationData() {
+        launch {
+            locationData.clear()
+            locationAdapter.notifyDataSetChanged()
+            withContext(Dispatchers.IO) {
+                locationData.addAll(
+                    AppDatabase.getDatabase(this@MainActivity).locationDataDao().getAll()
+                )
+            }
+            locationAdapter.notifyDataSetChanged()
+        }
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+        loadLocationData()
+    }
+
+
     override fun init() {
-
-
+        locationAdapter = ArrayAdapter(this, R.layout.popup_location_item, locationData)
+        select_location.setOnItemClickListener { _, _, position, _ ->
+            latitude.setText( locationData[position].lat)
+            longitude.setText( locationData[position].lon)
+        }
+        select_location.setAdapter(locationAdapter)
         version?.text = "V ${Application.getVersion()}"
         latitude.setText(Application.getLat())
         longitude.setText(Application.getLon())
@@ -186,6 +218,7 @@ class MainActivity : BaseActivity() {
             Application.saveLon(lon.toString())
 
             libTools.modifyLocation(lat, lon) {
+                logAdd("定位修改成功")
                 CommonUtil.showToast(Application.context, "定位修改成功")
             }
         }
@@ -199,6 +232,7 @@ class MainActivity : BaseActivity() {
 
         libTools.resetLocation {
             CommonUtil.showToast(Application.context, "定位已还原")
+            logAdd("定位已还原")
         }
 
     }

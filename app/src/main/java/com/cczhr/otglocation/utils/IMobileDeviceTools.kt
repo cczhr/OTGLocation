@@ -145,7 +145,7 @@ class IMobileDeviceTools {
                 successResult = BufferedReader(InputStreamReader(process!!.inputStream))
                 errorResult = BufferedReader(InputStreamReader(process!!.errorStream))
                 os = DataOutputStream(process!!.outputStream)
-                os?.write(".$saveFilePath/usbmuxd -v -f  --pidfile NONE --usbfd $fd ".toByteArray())//--pidfile NONE --usbfd $fd  --usbfd $fd
+                os?.write(".$saveFilePath/usbmuxd -v -f  ".toByteArray())//--pidfile NONE --usbfd $fd  --usbfd $fd
                 os?.writeBytes("\n")
                 os?.flush()
                 os?.close()

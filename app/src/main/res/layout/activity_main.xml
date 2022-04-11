@@ -121,6 +121,7 @@
             android:text="@string/latitude" />
 
         <EditText
+            android:selectAllOnFocus="true"
             android:id="@+id/latitude"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -142,7 +143,7 @@
             android:text="@string/longitude" />
 
         <EditText
-
+            android:selectAllOnFocus="true"
             android:id="@+id/longitude"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -159,12 +160,37 @@
         android:layout_height="wrap_content"
         android:text="@string/cancel_location_offset" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="downloadDriver"
-        android:text="@string/download_the_developer_driver"
-        android:textColor="@color/white" />
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="downloadDriver"
+            android:text="@string/download_the_developer_driver"
+            android:textColor="@color/white" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:id="@+id/text_input_layout2"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:hint="@string/local_location"
+            app:errorEnabled="false"
+            app:helperTextEnabled="true">
+            <AutoCompleteTextView
+                android:id="@+id/select_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"/>
+        </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
+
+
 
 
 
