@@ -261,7 +261,9 @@ class MainActivity : BaseActivity() {
             CommonUtil.showToast(Application.context, "请连接设备后再点击下载!")
             return
         }
-        version=version.substringBeforeLast(".")
+        if(version.split(".").size>2){
+            version=version.substringBeforeLast(".")
+        }
         progressDialog = CommonUtil.getProgressDialog(this, R.string.please_wait)
         launch(Dispatchers.Main) {
             var downloadUrl = ""

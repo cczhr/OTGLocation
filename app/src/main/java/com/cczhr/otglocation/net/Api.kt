@@ -14,7 +14,7 @@ import retrofit2.http.Url
  * @since 2021/6/10 10:06
  */
 interface Api {
-    @GET("repos/filsv/iPhoneOSDeviceSupport/contents")
+    @GET("repos/filsv/iOSDeviceSupport/contents")
     suspend fun getDeviceSupport(): DeviceSupportBean?
 
     @Streaming

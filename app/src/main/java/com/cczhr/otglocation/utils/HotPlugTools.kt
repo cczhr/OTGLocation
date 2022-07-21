@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
+import com.amap.api.mapcore.util.it
 import com.cczhr.otglocation.R
 
 
@@ -33,9 +34,9 @@ class HotPlugTools {
             } else if (UsbManager.ACTION_USB_DEVICE_ATTACHED == action) {
                 val device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE) as UsbDevice?
                 if (device?.vendorId == VID_APPLE)
-                    checkPermission(device)
+                    connectAppleDevice?.invoke(device.deviceName, 0)
 
-            } else if (ACTION_USB_PERMISSION == action) {
+            }/* else if (ACTION_USB_PERMISSION == action) {
                 if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                     val device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE) as UsbDevice?
                     if (device?.vendorId == VID_APPLE)
@@ -45,7 +46,7 @@ class HotPlugTools {
                 }
 
 
-            }
+            }*/
         }
     }
 
@@ -67,14 +68,14 @@ class HotPlugTools {
         this.disconnectAppleDevice = disconnectAppleDevice
         for(device in mUsbManager.deviceList.values ){
             if (device?.vendorId == VID_APPLE) {
-                checkPermission(device)
+                connectAppleDevice?.invoke(device.deviceName, 0)
 
             }
         }
         context.registerReceiver(mUsbReceiver, usbDeviceStateFilter)
     }
 
-    fun checkPermission(usbDevice: UsbDevice) {
+   /* fun checkPermission(usbDevice: UsbDevice) {
         val mUsbManager = context.getSystemService(Context.USB_SERVICE) as UsbManager
         if (mUsbManager.hasPermission(usbDevice)) {
             mUsbManager.openDevice(usbDevice)?.let {
@@ -87,7 +88,7 @@ class HotPlugTools {
             mUsbManager.requestPermission(usbDevice, pendingIntent);
         }
 
-    }
+    }*/
 
     fun unRegister(context: Context) {
         connectAppleDevice = null
