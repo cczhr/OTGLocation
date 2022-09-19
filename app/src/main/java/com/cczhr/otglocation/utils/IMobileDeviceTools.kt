@@ -165,7 +165,7 @@ class IMobileDeviceTools {
                                             ".${saveFilePath}/ideviceinfo -k DeviceName",
                                             { dName ->
                                                 deviceName.invoke(dName)
-
+                                                runCommand(".${saveFilePath}/idevicedevmodectl enable")
                                                 runCommand(
                                                     ".${saveFilePath}/ideviceinfo -k ProductVersion",
                                                     { pVersion ->
@@ -274,6 +274,10 @@ class IMobileDeviceTools {
             })
 
 
+    }
+
+    fun test(str:String){
+        runCommand(str)
     }
 
     fun uninstallLib(context: Context, isFinish: (() -> Unit)) {
