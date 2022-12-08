@@ -45,6 +45,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.OTGLocation">
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="@string/google_map_key" />
+        <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
         <meta-data android:name="com.amap.api.v2.apikey" android:value="23185808a860d03642cabce72547a117"/>
         <service android:name="com.amap.api.location.APSService" />
 
@@ -60,6 +62,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".MapActivity"  android:screenOrientation="portrait" />
+        <activity android:name=".GoogleMapActivity" android:screenOrientation="portrait" />
 
     </application>
 

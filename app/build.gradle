@@ -13,8 +13,8 @@ android {
         applicationId "com.cczhr.otglocation"
         minSdkVersion 24
         targetSdkVersion 30
-        versionCode 8
-        versionName "1.1.6"
+        versionCode 9
+        versionName "1.2.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -67,4 +67,7 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.github.getActivity:XXPermissions:12.5'
+    implementation 'com.google.android.gms:play-services-maps:18.0.2'
+    implementation 'com.google.android.gms:play-services-location:19.0.1'
+    implementation 'com.google.android.libraries.places:places:2.7.0'
 }

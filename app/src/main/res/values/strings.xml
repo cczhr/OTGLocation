@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">OTGLocation</string>
+    <string name="google_map_key">AIzaSyBP4eH7FbwrY8bz77tYfcHlkN_1FlpVDtE</string>
     <string name="log">日志(日志框内快速右滑清除日志)</string>
     <string name="connect_status">设备连接状态:</string>
     <string name="select_location">选取坐标</string>
@@ -7,6 +8,9 @@
     <string name="disconnected">未连接</string>
     <string name="connected">已连接</string>
     <string name="product_version">系统版本:</string>
+    <string name="choose_map">选择地图:</string>
+    <string name="google_map">谷歌地图</string>
+    <string name="amap_map">高德地图</string>
     <string name="device_name">设备名称:</string>
     <string name="latitude">纬度:</string>
     <string name="longitude">经度:</string>

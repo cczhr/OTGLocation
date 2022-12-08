@@ -71,6 +71,18 @@ class MainActivity : BaseActivity() {
 
 
     override fun init() {
+        cancel_location_offset.isChecked=Application.geLocationOffset()
+        if(Application.getUseGoogleMap()) rb_google_map.isChecked=true else  rb_amap_map.isChecked=true
+        rb_google_map.setOnCheckedChangeListener { buttonView, isChecked ->
+            if(isChecked) Application.saveUseGoogleMap(isChecked)
+        }
+        rb_amap_map.setOnCheckedChangeListener { buttonView, isChecked ->
+            if(isChecked) Application.saveUseGoogleMap(!isChecked)
+        }
+        cancel_location_offset.setOnCheckedChangeListener { buttonView, isChecked ->
+             Application.saveLocationOffset(isChecked)
+        }
+
         locationAdapter = ArrayAdapter(this, R.layout.popup_location_item, locationData)
         select_location.setOnItemClickListener { _, _, position, _ ->
             latitude.setText( locationData[position].lat)
@@ -147,17 +159,14 @@ class MainActivity : BaseActivity() {
 
 
     fun logAdd(str: String) {
-
         log.append(str + "\n")
         log.setSelection(log.text.toString().length)
-
-
     }
 
     fun selectLocation(view: View) {
         val lat = latitude.text.toString().toDoubleOrNull()
         val lon = longitude.text.toString().toDoubleOrNull()
-        val intent = Intent(this, MapActivity::class.java)
+        val intent = if(rb_amap_map.isChecked) Intent(this, MapActivity::class.java) else  Intent(this, GoogleMapActivity::class.java)
         if (lat != null && lon != null) {
             intent.putExtra("lat", lat)
             intent.putExtra("lon", lon)
